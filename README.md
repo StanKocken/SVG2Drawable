@@ -33,6 +33,10 @@ You can also specify the output of the script to create a file. By adding "> fil
 
     java -jar svg_converter.jar example.svg com.skocken.svg.example.drawable ExampleDrawable > ExampleDrawable.java
 
+Now, copy this "ExampleDrawable.java" into your Android project, into the package "com.skocken.svg.example.drawable" (from this example), and add it to your ImageView into your code with:
+
+    imageview.setImageDrawable(new ExampleDrawable());
+
 ## License
 
 * [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
