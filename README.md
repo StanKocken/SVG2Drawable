@@ -37,6 +37,8 @@ Now, copy this "ExampleDrawable.java" into your Android project, into the packag
 
     imageview.setImageDrawable(new ExampleDrawable());
 
+![diagram](https://raw.githubusercontent.com/StanKocken/SVG2Drawable/master/svg_to_drawable.png)
+
 ## License
 
 * [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
