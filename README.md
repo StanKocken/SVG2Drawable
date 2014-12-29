@@ -3,6 +3,8 @@ SVG2Drawable
 
 Use a jar executable to create a Drawable class to display a SVG on Android.
 
+This is a standalone library, not a Runtime Android library. You need to use it BEFORE your Android compilation (and only once per SVG file).
+
 ## Why?
 
 I want to use a scalable image format.
