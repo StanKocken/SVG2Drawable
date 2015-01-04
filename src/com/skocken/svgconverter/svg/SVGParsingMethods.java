@@ -88,60 +88,45 @@ public class SVGParsingMethods {
     }
 
     static InstructionRecorder parseTransform(InstructionRecorder drawInstructions, String s) {
-        if (s.startsWith("matrix(")) {
-            NumberParse np = parseNumbers(s.substring("matrix(".length()));
-            if (np.size() == 6) {
-                drawInstructions.add("matrix.reset();");
+        drawInstructions.add("matrix.reset();");
+        return parseTransformInternal(drawInstructions, s);
+    }
+
+    static InstructionRecorder parseTransformInternal(InstructionRecorder drawInstructions, String s) {
+        int lastP = s.lastIndexOf("(");
+        if (lastP > -1) {
+            String left = s.substring(0, lastP).trim();
+            NumberParse np = parseNumbers(s.substring(lastP+1));
+
+            if(left.endsWith("matrix") && np.size() == 6) {
+                // matrix
                 drawInstructions.add("matrix.setValues(new float[]{ factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, 0, 0, factorScale});",
-                // Row 1
-                np.getNumber(0), np.getNumber(2), np.getNumber(4),
-                // Row 2
-                np.getNumber(1), np.getNumber(3), np.getNumber(5));
-                return drawInstructions;
-            }
-        } else if (s.startsWith("translate(")) {
-            NumberParse np = parseNumbers(s.substring("translate(".length()));
-            if (np.size() > 0) {
+                        // Row 1
+                        np.getNumber(0), np.getNumber(2), np.getNumber(4),
+                        // Row 2
+                        np.getNumber(1), np.getNumber(3), np.getNumber(5));
+            } else if(left.endsWith("translate") && np.size() > 0) {
+                // translate
                 float tx = np.getNumber(0);
                 float ty = 0;
                 if (np.size() > 1) {
                     ty = np.getNumber(1);
                 }
-                drawInstructions.add("matrix.reset();");
                 drawInstructions.add("matrix.postTranslate(factorScale * %ff, factorScale * %ff);", tx, ty);
-                return drawInstructions;
-            }
-        } else if (s.startsWith("scale(")) {
-            NumberParse np = parseNumbers(s.substring("scale(".length()));
-            if (np.size() > 0) {
+            } else if(left.endsWith("scale") && np.size() > 0) {
                 float sx = np.getNumber(0);
                 float sy = 0;
                 if (np.size() > 1) {
                     sy = np.getNumber(1);
                 }
-                drawInstructions.add("matrix.reset();");
                 drawInstructions.add("matrix.postScale(factorScale * %ff, factorScale * %ff);", sx, sy);
-                return drawInstructions;
-            }
-        } else if (s.startsWith("skewX(")) {
-            NumberParse np = parseNumbers(s.substring("skewX(".length()));
-            if (np.size() > 0) {
+            } else if(left.endsWith("skewX") && np.size() > 0) {
                 float angle = np.getNumber(0);
-                drawInstructions.add("matrix.reset();");
                 drawInstructions.add("matrix.postSkew(factorScale * %ff, 0);", (float) Math.tan(angle));
-                return drawInstructions;
-            }
-        } else if (s.startsWith("skewY(")) {
-            NumberParse np = parseNumbers(s.substring("skewY(".length()));
-            if (np.size() > 0) {
+            } else if(left.endsWith("skewY") && np.size() > 0) {
                 float angle = np.getNumber(0);
-                drawInstructions.add("matrix.reset();");
                 drawInstructions.add("matrix.postSkew(0, factorScale * %ff);", (float) Math.tan(angle));
-                return drawInstructions;
-            }
-        } else if (s.startsWith("rotate(")) {
-            NumberParse np = parseNumbers(s.substring("rotate(".length()));
-            if (np.size() > 0) {
+            } else if(left.endsWith("rotate") && np.size() > 0) {
                 float angle = np.getNumber(0);
                 float cx = 0;
                 float cy = 0;
@@ -149,12 +134,16 @@ public class SVGParsingMethods {
                     cx = np.getNumber(1);
                     cy = np.getNumber(2);
                 }
-                drawInstructions.add("matrix.reset();");
-                drawInstructions.add("matrix.postTranslate(factorScale * %ff, factorScale * %ff);", cx, cy);
+                if(cx != 0 || cy != 0) {
+                    drawInstructions.add("matrix.postTranslate(factorScale * %ff, factorScale * %ff);", cx, cy);
+                }
                 drawInstructions.add("matrix.postRotate(%ff);", angle);
-                drawInstructions.add("matrix.postTranslate(factorScale * %ff, factorScale * %ff);", -cx, -cy);
-                return drawInstructions;
+                if(cx != 0 || cy != 0) {
+                    drawInstructions.add("matrix.postTranslate(factorScale * %ff, factorScale * %ff);", -cx, -cy);
+                }
             }
+
+            parseTransformInternal(drawInstructions, left);
         }
         return drawInstructions;
     }
@@ -177,7 +166,7 @@ public class SVGParsingMethods {
      * </ol>
      * <p/>
      * Numbers are separate by whitespace, comma or nothing at all (!) if they are self-delimiting, (ie. begin with a - sign)
-     * 
+     *
      * @param s
      *            the path string from the XML
      */
