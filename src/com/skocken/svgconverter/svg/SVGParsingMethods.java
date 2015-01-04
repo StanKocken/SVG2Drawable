@@ -96,16 +96,16 @@ public class SVGParsingMethods {
         int lastP = s.lastIndexOf("(");
         if (lastP > -1) {
             String left = s.substring(0, lastP).trim();
-            NumberParse np = parseNumbers(s.substring(lastP+1));
+            NumberParse np = parseNumbers(s.substring(lastP + 1));
 
-            if(left.endsWith("matrix") && np.size() == 6) {
+            if (left.endsWith("matrix") && np.size() == 6) {
                 // matrix
                 drawInstructions.add("matrix.setValues(new float[]{ factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, 0, 0, factorScale});",
-                        // Row 1
-                        np.getNumber(0), np.getNumber(2), np.getNumber(4),
-                        // Row 2
-                        np.getNumber(1), np.getNumber(3), np.getNumber(5));
-            } else if(left.endsWith("translate") && np.size() > 0) {
+                // Row 1
+                np.getNumber(0), np.getNumber(2), np.getNumber(4),
+                // Row 2
+                np.getNumber(1), np.getNumber(3), np.getNumber(5));
+            } else if (left.endsWith("translate") && np.size() > 0) {
                 // translate
                 float tx = np.getNumber(0);
                 float ty = 0;
@@ -113,20 +113,20 @@ public class SVGParsingMethods {
                     ty = np.getNumber(1);
                 }
                 drawInstructions.add("matrix.postTranslate(factorScale * %ff, factorScale * %ff);", tx, ty);
-            } else if(left.endsWith("scale") && np.size() > 0) {
+            } else if (left.endsWith("scale") && np.size() > 0) {
                 float sx = np.getNumber(0);
                 float sy = 0;
                 if (np.size() > 1) {
                     sy = np.getNumber(1);
                 }
-                drawInstructions.add("matrix.postScale(factorScale * %ff, factorScale * %ff);", sx, sy);
-            } else if(left.endsWith("skewX") && np.size() > 0) {
+                drawInstructions.add("matrix.postScale(%ff, %ff);", sx, sy);
+            } else if (left.endsWith("skewX") && np.size() > 0) {
                 float angle = np.getNumber(0);
-                drawInstructions.add("matrix.postSkew(factorScale * %ff, 0);", (float) Math.tan(angle));
-            } else if(left.endsWith("skewY") && np.size() > 0) {
+                drawInstructions.add("matrix.postSkew(%ff, 0);", (float) Math.tan(angle));
+            } else if (left.endsWith("skewY") && np.size() > 0) {
                 float angle = np.getNumber(0);
-                drawInstructions.add("matrix.postSkew(0, factorScale * %ff);", (float) Math.tan(angle));
-            } else if(left.endsWith("rotate") && np.size() > 0) {
+                drawInstructions.add("matrix.postSkew(0, %ff);", (float) Math.tan(angle));
+            } else if (left.endsWith("rotate") && np.size() > 0) {
                 float angle = np.getNumber(0);
                 float cx = 0;
                 float cy = 0;
@@ -134,11 +134,11 @@ public class SVGParsingMethods {
                     cx = np.getNumber(1);
                     cy = np.getNumber(2);
                 }
-                if(cx != 0 || cy != 0) {
+                if (cx != 0 || cy != 0) {
                     drawInstructions.add("matrix.postTranslate(factorScale * %ff, factorScale * %ff);", cx, cy);
                 }
                 drawInstructions.add("matrix.postRotate(%ff);", angle);
-                if(cx != 0 || cy != 0) {
+                if (cx != 0 || cy != 0) {
                     drawInstructions.add("matrix.postTranslate(factorScale * %ff, factorScale * %ff);", -cx, -cy);
                 }
             }
@@ -166,7 +166,7 @@ public class SVGParsingMethods {
      * </ol>
      * <p/>
      * Numbers are separate by whitespace, comma or nothing at all (!) if they are self-delimiting, (ie. begin with a - sign)
-     *
+     * 
      * @param s
      *            the path string from the XML
      */
