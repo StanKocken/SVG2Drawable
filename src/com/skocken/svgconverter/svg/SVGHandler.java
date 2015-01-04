@@ -6,6 +6,7 @@ import static com.skocken.svgconverter.svg.SVGParsingMethods.getNumberParseAttr;
 import static com.skocken.svgconverter.svg.SVGParsingMethods.getStringAttr;
 import static com.skocken.svgconverter.svg.SVGParsingMethods.parseTransform;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,7 +16,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class SVGHandler extends DefaultHandler {
 
-    boolean pushed = false;
+    List<Element> elements = new ArrayList<Element>();
 
     HashMap<String, Shader> gradientMap = new HashMap<String, Shader>();
 
@@ -235,20 +236,20 @@ public class SVGHandler extends DefaultHandler {
 
     private boolean boundsMode = false;
 
-    private void pushTransform(Attributes atts) {
+    private boolean pushTransform(Attributes atts) {
         final String transform = getStringAttr("transform", atts);
-        pushed = transform != null;
-        if (pushed) {
+        if (transform != null) {
             parseTransform(drawInstructions, transform);
             drawInstructions.add("canvas.save();");
             drawInstructions.add("canvas.concat(matrix);");
+            return true;
+        } else {
+            return false;
         }
     }
 
     private void popTransform() {
-        if (pushed) {
-            drawInstructions.add("canvas.restore();");
-        }
+        drawInstructions.add("canvas.restore();");
     }
 
     @Override
@@ -258,6 +259,10 @@ public class SVGHandler extends DefaultHandler {
         if (localName == null || localName.length() == 0) {
             localName = qName;
         }
+
+        Element element = new Element(localName);
+        elements.add(0, element);
+
         // Ignore everything but rectangles in bounds mode
         if (boundsMode) {
             return;
@@ -324,6 +329,9 @@ public class SVGHandler extends DefaultHandler {
                     // Util.debug("Hidden up: " + hiddenLevel);
                 }
             }
+            if (pushTransform(atts)) {
+                element.setHasCanvasSave();
+            }
         } else if (!hidden && localName.equals("rect")) {
             Float x = getFloatAttr("x", atts);
             if (x == null) {
@@ -335,7 +343,9 @@ public class SVGHandler extends DefaultHandler {
             }
             Float width = getFloatAttr("width", atts);
             Float height = getFloatAttr("height", atts);
-            pushTransform(atts);
+            if (pushTransform(atts)) {
+                element.setHasCanvasSave();
+            }
             Properties props = new Properties(atts);
             if (doFill(props, gradientMap)) {
                 drawInstructions.add("canvas.drawRect(factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, paint);", x, y, x + width, y + height);
@@ -343,7 +353,6 @@ public class SVGHandler extends DefaultHandler {
             if (doStroke(props)) {
                 drawInstructions.add("canvas.drawRect(factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, paint);", x, y, x + width, y + height);
             }
-            popTransform();
         } else if (!hidden && localName.equals("line")) {
             Float x1 = getFloatAttr("x1", atts);
             Float x2 = getFloatAttr("x2", atts);
@@ -351,16 +360,19 @@ public class SVGHandler extends DefaultHandler {
             Float y2 = getFloatAttr("y2", atts);
             Properties props = new Properties(atts);
             if (doStroke(props)) {
-                pushTransform(atts);
+                if (pushTransform(atts)) {
+                    element.setHasCanvasSave();
+                }
                 drawInstructions.add("canvas.drawLine(factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, paint);", x1, y1, x2, y2);
-                popTransform();
             }
         } else if (!hidden && localName.equals("circle")) {
             Float centerX = getFloatAttr("cx", atts);
             Float centerY = getFloatAttr("cy", atts);
             Float radius = getFloatAttr("r", atts);
             if (centerX != null && centerY != null && radius != null) {
-                pushTransform(atts);
+                if (pushTransform(atts)) {
+                    element.setHasCanvasSave();
+                }
                 Properties props = new Properties(atts);
                 if (doFill(props, gradientMap)) {
                     drawInstructions.add("canvas.drawCircle(factorScale * %ff, factorScale * %ff, factorScale * %ff, paint);", centerX, centerY, radius);
@@ -368,7 +380,6 @@ public class SVGHandler extends DefaultHandler {
                 if (doStroke(props)) {
                     drawInstructions.add("canvas.drawCircle(factorScale * %ff, factorScale * %ff, factorScale * %ff, paint);", centerX, centerY, radius);
                 }
-                popTransform();
             }
         } else if (!hidden && localName.equals("ellipse")) {
             Float centerX = getFloatAttr("cx", atts);
@@ -376,7 +387,9 @@ public class SVGHandler extends DefaultHandler {
             Float radiusX = getFloatAttr("rx", atts);
             Float radiusY = getFloatAttr("ry", atts);
             if (centerX != null && centerY != null && radiusX != null && radiusY != null) {
-                pushTransform(atts);
+                if (pushTransform(atts)) {
+                    element.setHasCanvasSave();
+                }
                 Properties props = new Properties(atts);
                 drawInstructions.add("rect.set(factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff);", centerX - radiusX, centerY - radiusY, centerX + radiusX, centerY + radiusY);
                 if (doFill(props, gradientMap)) {
@@ -385,14 +398,15 @@ public class SVGHandler extends DefaultHandler {
                 if (doStroke(props)) {
                     drawInstructions.add("canvas.drawOval(rect, paint);");
                 }
-                popTransform();
             }
         } else if (!hidden && (localName.equals("polygon") || localName.equals("polyline"))) {
             NumberParse numbers = getNumberParseAttr("points", atts);
             if (numbers != null) {
                 drawInstructions.add("p.reset();");
                 if (numbers.size() > 1) {
-                    pushTransform(atts);
+                    if (pushTransform(atts)) {
+                        element.setHasCanvasSave();
+                    }
                     Properties props = new Properties(atts);
                     drawInstructions.add("p.moveTo(factorScale * %ff, factorScale * %ff);", numbers.getNumber(0), numbers.getNumber(1));
                     for (int i = 2; i < numbers.size(); i += 2) {
@@ -410,12 +424,13 @@ public class SVGHandler extends DefaultHandler {
                     if (doStroke(props)) {
                         drawInstructions.add("canvas.drawPath(p, paint);");
                     }
-                    popTransform();
                 }
             }
         } else if (!hidden && localName.equals("path")) {
             doPath(drawInstructions, getStringAttr("d", atts));
-            pushTransform(atts);
+            if (pushTransform(atts)) {
+                element.setHasCanvasSave();
+            }
             Properties props = new Properties(atts);
             if (doFill(props, gradientMap)) {
                 // doLimits(p);
@@ -424,7 +439,6 @@ public class SVGHandler extends DefaultHandler {
             if (doStroke(props)) {
                 drawInstructions.add("canvas.drawPath(p, paint);");
             }
-            popTransform();
         } else if (!hidden) {
         }
     }
@@ -439,6 +453,7 @@ public class SVGHandler extends DefaultHandler {
         if (localName == null || localName.length() == 0) {
             localName = qName;
         }
+
         if (localName.equals("svg")) {
         } else if (localName.equals("linearGradient")) {
             if (gradient.id != null) {
@@ -504,6 +519,24 @@ public class SVGHandler extends DefaultHandler {
             }
             // Clear gradient map
             gradientMap.clear();
+        }
+
+        Element element = pollLastElement(localName);
+        if (element != null && element.hasCanvasSave()) {
+            popTransform();
+        }
+    }
+
+    private Element pollLastElement(String name) {
+        if (elements.size() == 0) {
+            return null;
+        }
+        Element element = elements.get(0);
+        if (element != null && name != null && name.equals(element.getName())) {
+            elements.remove(0);
+            return element;
+        } else {
+            return null;
         }
     }
 }
