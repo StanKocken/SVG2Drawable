@@ -91,6 +91,7 @@ public class SVGHandler extends DefaultHandler {
             viewBox[3] = height;
         }
         drawInstructions.addBegin("private static final int[] VIEW_BOX = { %d, %d, %d, %d };", viewBox[0], viewBox[1], viewBox[2], viewBox[3]);
+        drawInstructions.add("canvas.restore();");
         drawInstructions.add("}");
 
         drawInstructions.add("@Override public void setAlpha(int alpha) { }");
