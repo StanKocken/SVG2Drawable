@@ -26,7 +26,7 @@ public class SVGHandler extends DefaultHandler {
 
     int height, width;
 
-    int viewBox[];
+    float viewBox[];
 
     InstructionRecorder drawInstructions = new InstructionRecorder();
 
@@ -45,8 +45,8 @@ public class SVGHandler extends DefaultHandler {
         drawInstructions.add("public void draw(Canvas canvas) {");
         drawInstructions.add("paint.setAntiAlias(true);");
 
-        drawInstructions.add("int viewBoxWidth = VIEW_BOX[2] - VIEW_BOX[0];");
-        drawInstructions.add("int viewBoxHeight = VIEW_BOX[3] - VIEW_BOX[1];");
+        drawInstructions.add("float viewBoxWidth = VIEW_BOX[2] - VIEW_BOX[0];");
+        drawInstructions.add("float viewBoxHeight = VIEW_BOX[3] - VIEW_BOX[1];");
         drawInstructions.add("Rect bounds = getBounds();");
         drawInstructions.add("if (viewBoxHeight <= 0 || viewBoxWidth <= 0 || bounds.width() <= 0 || bounds.height() <= 0) {");
         drawInstructions.add("return;");
@@ -85,21 +85,21 @@ public class SVGHandler extends DefaultHandler {
     public void endDocument() throws SAXException {
         // Clean up after parsing a doc
         if (viewBox == null) {
-            viewBox = new int[4];
+            viewBox = new float[4];
             viewBox[0] = 0;
             viewBox[1] = 0;
             viewBox[2] = width;
             viewBox[3] = height;
         }
-        drawInstructions.addBegin("private static final int[] VIEW_BOX = { %d, %d, %d, %d };", viewBox[0], viewBox[1], viewBox[2], viewBox[3]);
+        drawInstructions.addBegin("private static final float[] VIEW_BOX = { %ff, %ff, %ff, %ff };", viewBox[0], viewBox[1], viewBox[2], viewBox[3]);
         drawInstructions.add("canvas.restore();");
         drawInstructions.add("}");
 
         drawInstructions.add("@Override public void setAlpha(int alpha) { }");
         drawInstructions.add("@Override public void setColorFilter(ColorFilter cf) { }");
         drawInstructions.add("@Override public int getOpacity() { return 0; }");
-        drawInstructions.add("@Override public int getIntrinsicHeight() { return VIEW_BOX[3] - VIEW_BOX[1]; }");
-        drawInstructions.add("@Override public int getIntrinsicWidth() { return VIEW_BOX[2] - VIEW_BOX[0]; }");
+        drawInstructions.add("@Override public int getIntrinsicHeight() { return Math.round(VIEW_BOX[3] - VIEW_BOX[1]); }");
+        drawInstructions.add("@Override public int getIntrinsicWidth() { return Math.round(VIEW_BOX[2] - VIEW_BOX[0]); }");
         drawInstructions.add("}");
 
         drawInstructions.addBegin("public class %s extends Drawable {", className);
@@ -276,11 +276,11 @@ public class SVGHandler extends DefaultHandler {
             if (viewBoxStr != null) {
                 String[] split = viewBoxStr.split(" ");
                 if (split.length == 4) {
-                    viewBox = new int[4];
-                    viewBox[0] = Integer.parseInt(split[0]);
-                    viewBox[1] = Integer.parseInt(split[1]);
-                    viewBox[2] = Integer.parseInt(split[2]);
-                    viewBox[3] = Integer.parseInt(split[3]);
+                    viewBox = new float[4];
+                    viewBox[0] = Float.parseFloat(split[0]);
+                    viewBox[1] = Float.parseFloat(split[1]);
+                    viewBox[2] = Float.parseFloat(split[2]);
+                    viewBox[3] = Float.parseFloat(split[3]);
                 }
             }
         } else if (localName.equals("defs")) {
