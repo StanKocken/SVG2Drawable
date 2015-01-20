@@ -281,8 +281,6 @@ public class SVGHandler extends DefaultHandler {
                     viewBox[1] = Float.parseFloat(split[1]);
                     viewBox[2] = Float.parseFloat(split[2]);
                     viewBox[3] = Float.parseFloat(split[3]);
-                	width=(int) (viewBox[2]-viewBox[0]);
-                    height=(int) (viewBox[3]-viewBox[1]);
                 }
             }
         } else if (localName.equals("defs")) {
