@@ -270,8 +270,8 @@ public class SVGHandler extends DefaultHandler {
             return;
         }
         if (localName.equals("svg")) {
-            width = (int) Math.ceil(getFloatAttr("width", atts));
-            height = (int) Math.ceil(getFloatAttr("height", atts));
+            width = (int) Math.ceil(getFloatAttr("width", atts,0f));
+            height = (int) Math.ceil(getFloatAttr("height", atts,0f));
             String viewBoxStr = getStringAttr("viewBox", atts);
             if (viewBoxStr != null) {
                 String[] split = viewBoxStr.split(" ");
@@ -281,6 +281,8 @@ public class SVGHandler extends DefaultHandler {
                     viewBox[1] = Float.parseFloat(split[1]);
                     viewBox[2] = Float.parseFloat(split[2]);
                     viewBox[3] = Float.parseFloat(split[3]);
+                	width=(int) viewBox[2];
+                    height=(int) viewBox[3];
                 }
             }
         } else if (localName.equals("defs")) {
