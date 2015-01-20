@@ -270,8 +270,8 @@ public class SVGHandler extends DefaultHandler {
             return;
         }
         if (localName.equals("svg")) {
-            width = (int) Math.ceil(getFloatAttr("width", atts));
-            height = (int) Math.ceil(getFloatAttr("height", atts));
+            width = (int) Math.ceil(getFloatAttr("width", atts,0f));
+            height = (int) Math.ceil(getFloatAttr("height", atts,0f));
             String viewBoxStr = getStringAttr("viewBox", atts);
             if (viewBoxStr != null) {
                 String[] split = viewBoxStr.split(" ");
