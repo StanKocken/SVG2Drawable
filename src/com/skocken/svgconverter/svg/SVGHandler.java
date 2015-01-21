@@ -91,6 +91,14 @@ public class SVGHandler extends DefaultHandler {
             viewBox[2] = width;
             viewBox[3] = height;
         }
+
+        float width = viewBox[2] - viewBox[0];
+        float height = viewBox[3] - viewBox[1];
+
+        float factorMin = Math.min(width / 10, height / 10);
+        int minWidth = Math.round(width / factorMin);
+        int minHeight = Math.round(height / (width / minWidth));
+
         drawInstructions.addBegin("private static final float[] VIEW_BOX = { %ff, %ff, %ff, %ff };", viewBox[0], viewBox[1], viewBox[2], viewBox[3]);
         drawInstructions.add("canvas.restore();");
         drawInstructions.add("}");
@@ -98,8 +106,8 @@ public class SVGHandler extends DefaultHandler {
         drawInstructions.add("@Override public void setAlpha(int alpha) { }");
         drawInstructions.add("@Override public void setColorFilter(ColorFilter cf) { }");
         drawInstructions.add("@Override public int getOpacity() { return 0; }");
-        drawInstructions.add("@Override public int getIntrinsicHeight() { return Math.round(VIEW_BOX[3] - VIEW_BOX[1]); }");
-        drawInstructions.add("@Override public int getIntrinsicWidth() { return Math.round(VIEW_BOX[2] - VIEW_BOX[0]); }");
+        drawInstructions.add("@Override public int getMinimumHeight() { return %d; }", minHeight);
+        drawInstructions.add("@Override public int getMinimumWidth() { return %d; }", minWidth);
         drawInstructions.add("}");
 
         drawInstructions.addBegin("public class %s extends Drawable {", className);
@@ -270,8 +278,8 @@ public class SVGHandler extends DefaultHandler {
             return;
         }
         if (localName.equals("svg")) {
-            width = (int) Math.ceil(getFloatAttr("width", atts,0f));
-            height = (int) Math.ceil(getFloatAttr("height", atts,0f));
+            width = (int) Math.ceil(getFloatAttr("width", atts, 0f));
+            height = (int) Math.ceil(getFloatAttr("height", atts, 0f));
             String viewBoxStr = getStringAttr("viewBox", atts);
             if (viewBoxStr != null) {
                 String[] split = viewBoxStr.split(" ");
