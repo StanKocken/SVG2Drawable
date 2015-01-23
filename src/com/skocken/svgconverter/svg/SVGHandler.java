@@ -69,7 +69,7 @@ public class SVGHandler extends DefaultHandler {
         drawInstructions.add("canvas.translate(bounds.left, bounds.top);");
         drawInstructions.add("canvas.translate(-Math.round(factorScale * VIEW_BOX[0]), -Math.round(factorScale * VIEW_BOX[1]));");
         drawInstructions.add("canvas.translate(Math.round(marginX / 2f), Math.round(marginY / 2f));");
-        drawInstructions.add("canvas.clipRect(bounds.left, bounds.top, bounds.left + newViewBoxWidth, bounds.top + newViewBoxHeight);");
+        drawInstructions.add("canvas.clipRect(0, 0, newViewBoxWidth, newViewBoxHeight);");
     }
 
     public List<String> getDrawInstructions() {
