@@ -246,6 +246,8 @@ public class SVGHandler extends DefaultHandler {
 
     private boolean boundsMode = false;
 
+    private boolean defsMode = false;
+
     private boolean pushTransform(Attributes atts) {
         final String transform = getStringAttr("transform", atts);
         if (transform != null) {
@@ -277,6 +279,10 @@ public class SVGHandler extends DefaultHandler {
         if (boundsMode) {
             return;
         }
+        // Ignore defs
+        if (defsMode) {
+            return;
+        }
         if (localName.equals("svg")) {
             width = (int) Math.ceil(getFloatAttr("width", atts, 0f));
             height = (int) Math.ceil(getFloatAttr("height", atts, 0f));
@@ -293,6 +299,7 @@ public class SVGHandler extends DefaultHandler {
             }
         } else if (localName.equals("defs")) {
             // Ignore
+            defsMode = true;
         } else if (localName.equals("linearGradient")) {
             gradient = doGradient(true, atts);
         } else if (localName.equals("radialGradient")) {
@@ -529,6 +536,8 @@ public class SVGHandler extends DefaultHandler {
             }
             // Clear gradient map
             gradientMap.clear();
+        } else if (localName.equals("defs")) {
+            defsMode = false;
         }
 
         Element element = pollLastElement(localName);
