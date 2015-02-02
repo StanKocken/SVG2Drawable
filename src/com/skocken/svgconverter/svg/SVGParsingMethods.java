@@ -294,18 +294,19 @@ public class SVGParsingMethods {
                     float x = ph.nextFloat();
                     float y = ph.nextFloat();
                     if (cmd == 'c') {
-                        x1 += lastX;
-                        x2 += lastX;
-                        x += lastX;
-                        y1 += lastY;
-                        y2 += lastY;
-                        y += lastY;
+                        drawInstructions.add("p.rCubicTo(factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff);", x1, y1, x2, y2, x, y);
+                        lastX1 += x2;
+                        lastY1 += y2;
+                        lastX += x;
+                        lastY += y;
+                    } else {
+                        drawInstructions.add("p.cubicTo(factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff);", x1, y1, x2, y2, x, y);
+                        lastX1 = x2;
+                        lastY1 = y2;
+                        lastX = x;
+                        lastY = y;
+
                     }
-                    drawInstructions.add("p.cubicTo(factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff, factorScale * %ff);", x1, y1, x2, y2, x, y);
-                    lastX1 = x2;
-                    lastY1 = y2;
-                    lastX = x;
-                    lastY = y;
                     break;
                 }
                 case 'S':
