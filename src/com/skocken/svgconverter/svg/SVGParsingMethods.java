@@ -181,6 +181,7 @@ public class SVGParsingMethods {
         float lastY1 = 0;
         float subPathStartX = 0;
         float subPathStartY = 0;
+        int nbMove = 0;
         char prevCmd = 0;
         while (ph.pos < n) {
             char cmd = s.charAt(ph.pos);
@@ -217,6 +218,7 @@ public class SVGParsingMethods {
             switch (cmd) {
                 case 'M':
                 case 'm': {
+                    nbMove++;
                     float x = ph.nextFloat();
                     float y = ph.nextFloat();
                     if (cmd == 'm') {
@@ -351,6 +353,9 @@ public class SVGParsingMethods {
                 lastY1 = lastY;
             }
             ph.skipWhitespace();
+        }
+        if (nbMove > 1) {
+            drawInstructions.add("p.setFillType(Path.FillType.EVEN_ODD);");
         }
     }
 
