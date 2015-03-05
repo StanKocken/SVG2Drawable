@@ -45,8 +45,8 @@ public class SVGHandler extends DefaultHandler {
         drawInstructions.add("public void draw(Canvas canvas) {");
         drawInstructions.add("paint.setAntiAlias(true);");
 
-        drawInstructions.add("float viewBoxWidth = VIEW_BOX[2] - VIEW_BOX[0];");
-        drawInstructions.add("float viewBoxHeight = VIEW_BOX[3] - VIEW_BOX[1];");
+        drawInstructions.add("float viewBoxWidth = VIEW_BOX[2];");
+        drawInstructions.add("float viewBoxHeight = VIEW_BOX[3];");
         drawInstructions.add("Rect bounds = getBounds();");
         drawInstructions.add("if (viewBoxHeight <= 0 || viewBoxWidth <= 0 || bounds.width() <= 0 || bounds.height() <= 0) {");
         drawInstructions.add("return;");
@@ -67,9 +67,9 @@ public class SVGHandler extends DefaultHandler {
         drawInstructions.add("int marginX = bounds.width() - newViewBoxWidth;");
         drawInstructions.add("int marginY = bounds.height() - newViewBoxHeight;");
         drawInstructions.add("canvas.translate(bounds.left, bounds.top);");
+        drawInstructions.add("canvas.clipRect(0, 0, newViewBoxWidth, newViewBoxHeight);");
         drawInstructions.add("canvas.translate(-Math.round(factorScale * VIEW_BOX[0]), -Math.round(factorScale * VIEW_BOX[1]));");
         drawInstructions.add("canvas.translate(Math.round(marginX / 2f), Math.round(marginY / 2f));");
-        drawInstructions.add("canvas.clipRect(0, 0, newViewBoxWidth, newViewBoxHeight);");
     }
 
     public List<String> getDrawInstructions() {
@@ -92,8 +92,8 @@ public class SVGHandler extends DefaultHandler {
             viewBox[3] = height;
         }
 
-        float width = viewBox[2] - viewBox[0];
-        float height = viewBox[3] - viewBox[1];
+        float width = viewBox[2];
+        float height = viewBox[3];
 
         float factorMin = Math.min(width / 10, height / 10);
         int minWidth = Math.round(width / factorMin);
