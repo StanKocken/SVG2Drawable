@@ -52,15 +52,15 @@ public class SVGHandler extends DefaultHandler {
         drawInstructions.add("return;");
         drawInstructions.add("}");
         drawInstructions.add("canvas.save();");
-        drawInstructions.add("float viewBoxRatio = viewBoxWidth / (float) viewBoxHeight;");
+        drawInstructions.add("float viewBoxRatio = viewBoxWidth / viewBoxHeight;");
         drawInstructions.add("float boundsRatio = bounds.width() / (float) bounds.height();");
         drawInstructions.add("float factorScale;");
         drawInstructions.add("if (boundsRatio > viewBoxRatio) {");
         drawInstructions.add(" // canvas larger than viewbox");
-        drawInstructions.add(" factorScale = bounds.height() / (float) viewBoxHeight;");
+        drawInstructions.add(" factorScale = bounds.height() / viewBoxHeight;");
         drawInstructions.add("} else {");
         drawInstructions.add(" // canvas higher (or equals) than viewbox");
-        drawInstructions.add(" factorScale = bounds.width() / (float) viewBoxWidth;");
+        drawInstructions.add(" factorScale = bounds.width() / viewBoxWidth;");
         drawInstructions.add("}");
         drawInstructions.add("int newViewBoxHeight = Math.round(factorScale * viewBoxHeight);");
         drawInstructions.add("int newViewBoxWidth = Math.round(factorScale * viewBoxWidth);");
